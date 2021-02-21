@@ -13,6 +13,9 @@
 
   let popover;
 
+  export let showToday = false;
+  export let showClear = false;
+
   export let format = '#{m}/#{d}/#{Y}';
   export let start = new Date(Date.now() - oneYear);
   export let end = new Date(Date.now() + oneYear);
@@ -28,7 +31,7 @@
     ['Wednesday', 'Wed'],
     ['Thursday', 'Thu'],
     ['Friday', 'Fri'],
-    ['Saturday', 'Sat']
+    ['Saturday', 'Sat'],
   ];
   export let monthsOfYear = [
     ['January', 'Jan'],
@@ -42,13 +45,13 @@
     ['September', 'Sep'],
     ['October', 'Oct'],
     ['November', 'Nov'],
-    ['December', 'Dec']
+    ['December', 'Dec'],
   ];
 
-  selected = (
-    selected.getTime() < start.getTime()
-    || selected.getTime() > end.getTime()
-  ) ? start : selected;
+  selected =
+    selected.getTime() < start.getTime() || selected.getTime() > end.getTime()
+      ? start
+      : selected;
 
   export let style = '';
 
@@ -63,11 +66,14 @@
   export let dayHighlightedTextColor = '#4a4a4a';
 
   internationalize({ daysOfWeek, monthsOfYear });
-  let sortedDaysOfWeek = weekStart === 0 ? daysOfWeek : (() => {
-    let dow = daysOfWeek.slice();
-    dow.push(dow.shift());
-    return dow;
-  })();
+  let sortedDaysOfWeek =
+    weekStart === 0
+      ? daysOfWeek
+      : (() => {
+          let dow = daysOfWeek.slice();
+          dow.push(dow.shift());
+          return dow;
+        })();
 
   let highlighted = today;
   let shouldShakeDate = false;
@@ -99,7 +105,8 @@
   $: visibleMonth = months[monthIndex];
 
   $: visibleMonthId = year + month / 100;
-  $: lastVisibleDate = visibleMonth.weeks[visibleMonth.weeks.length - 1].days[6].date;
+  $: lastVisibleDate =
+    visibleMonth.weeks[visibleMonth.weeks.length - 1].days[6].date;
   $: firstVisibleDate = visibleMonth.weeks[0].days[0].date;
   $: canIncrementMonth = monthIndex < months.length - 1;
   $: canDecrementMonth = monthIndex > 0;
@@ -117,9 +124,10 @@
 
   export let formattedSelected;
   $: {
-    formattedSelected = typeof format === 'function'
-      ? format(selected)
-      : formatDate(selected, format);
+    formattedSelected =
+      typeof format === 'function'
+        ? format(selected)
+        : formatDate(selected, format);
   }
 
   onMount(() => {
@@ -147,7 +155,9 @@
   }
 
   const getDay = (m, d, y) => {
-    let theMonth = months.find(aMonth => aMonth.month === m && aMonth.year === y);
+    let theMonth = months.find(
+      (aMonth) => aMonth.month === m && aMonth.year === y,
+    );
     if (!theMonth) return null;
     // eslint-disable-next-line
     for (let i = 0; i < theMonth.weeks.length; ++i) {
@@ -166,7 +176,7 @@
     let correspondingDayObj = getDay(
       proposedDate.getMonth(),
       proposedDate.getDate(),
-      proposedDate.getFullYear()
+      proposedDate.getFullYear(),
     );
     if (!correspondingDayObj || !correspondingDayObj.isInRange) return;
     highlighted = proposedDate;
@@ -179,7 +189,11 @@
   }
 
   function checkIfVisibleDateIsSelectable(date) {
-    const proposedDay = getDay(date.getMonth(), date.getDate(), date.getFullYear());
+    const proposedDay = getDay(
+      date.getMonth(),
+      date.getDate(),
+      date.getFullYear(),
+    );
     return proposedDay && proposedDay.selectable;
   }
 
@@ -193,6 +207,13 @@
 
   function assignValueToTrigger(formatted) {
     assignmentHandler(formatted);
+  }
+
+  function clear() {
+    close();
+    formattedSelected = null;
+    dateChosen = false;
+    selected = today;
   }
 
   function registerSelection(chosen) {
@@ -260,24 +281,24 @@
 
 <div
   class="datepicker"
-  class:open="{isOpen}"
-  class:closing="{isClosing}"
+  class:open={isOpen}
+  class:closing={isClosing}
   style={wrapperStyle}
 >
   <Popover
-    bind:this="{popover}"
-    bind:open="{isOpen}"
-    bind:shrink="{isClosing}"
+    bind:this={popover}
+    bind:open={isOpen}
+    bind:shrink={isClosing}
     {trigger}
-    on:opened="{registerOpen}"
-    on:closed="{registerClose}"
+    on:opened={registerOpen}
+    on:closed={registerClose}
   >
     <div slot="trigger">
       <slot {selected} {formattedSelected}>
         {#if !trigger}
-        <button class="calendar-button" type="button">
-          {formattedSelected}
-        </button>
+          <button class="calendar-button" type="button">
+            {formattedSelected}
+          </button>
         {/if}
       </slot>
     </div>
@@ -291,12 +312,12 @@
           {start}
           {end}
           {monthsOfYear}
-          on:monthSelected={e => changeMonth(e.detail)}
-          on:incrementMonth={e => incrementMonth(e.detail)}
+          on:monthSelected={(e) => changeMonth(e.detail)}
+          on:incrementMonth={(e) => incrementMonth(e.detail)}
         />
         <div class="legend">
           {#each sortedDaysOfWeek as day}
-          <span>{day[1]}</span>
+            <span>{day[1]}</span>
           {/each}
         </div>
         <Month
@@ -305,14 +326,40 @@
           {highlighted}
           {shouldShakeDate}
           id={visibleMonthId}
-          on:dateSelected={e => registerSelection(e.detail)}
+          on:dateSelected={(e) => registerSelection(e.detail)}
         />
+      </div>
+
+      <div>
+        {#if showToday}
+          <button
+            id="today-button"
+            on:click={() => {
+              registerSelection(today);
+            }}>Today</button
+          >
+        {/if}
+        {#if showClear}
+          <button id="clear-button" on:click={clear}>Clear</button>
+        {/if}
       </div>
     </div>
   </Popover>
 </div>
 
 <style>
+  #today-button {
+    cursor: pointer;
+    padding: 10px 10px;
+    margin-right: 10px;
+  }
+
+  #clear-button {
+    cursor: pointer;
+    padding: 10px 10px;
+    margin-left: 10px;
+  }
+
   .datepicker {
     display: inline-block;
     margin: 0 auto;
