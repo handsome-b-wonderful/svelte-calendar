@@ -83,7 +83,7 @@
 	</code></pre>
 
   <div class="text-center">
-    <Datepicker format={dateFormat} bind:formattedSelected bind:dateChosen>
+    <Datepicker format={dateFormat} bind:formattedSelected bind:dateChosen showClear=true showToday=true>
       <button class="custom-button">
         {#if dateChosen} Chosen: {formattedSelected} {:else} Pick a date {/if}
       </button>
@@ -113,13 +113,13 @@ var cal = new SvelteCalendar(&#123;
     <Datepicker
       bind:formattedSelected={exampleFormatted}
       bind:dateChosen={exampleChosen}
+      showClear=true
     >
       <button id="test">
         {#if exampleChosen} {exampleFormatted} {:else} Custom Button {/if}
       </button>
     </Datepicker>
   </div>
-
 
   <h4>Add "Today" and/or "Clear" buttons</h4>
 
@@ -142,7 +142,6 @@ showClear="true"
       </button>
     </Datepicker>
   </div>
-
 
   <p>You can confine the date selection range with start and end:</p>
 
@@ -182,6 +181,7 @@ showClear="true"
 
   <div class="text-center">
     <Datepicker
+      showClear=true
       format={dateFormat}
       on:dateSelected={(e) => logChoice(e.detail.date)}
     />
