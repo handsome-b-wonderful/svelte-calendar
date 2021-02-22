@@ -15,6 +15,7 @@
 
   export let showToday = false;
   export let showClear = false;
+  export let clearText = 'Select a Date';
 
   export let format = '#{m}/#{d}/#{Y}';
   export let start = new Date(Date.now() - oneYear);
@@ -124,10 +125,15 @@
 
   export let formattedSelected;
   $: {
-    formattedSelected =
-      typeof format === 'function'
-        ? format(selected)
-        : formatDate(selected, format);
+    if (selected === null) {
+      formattedSelected = clearText;
+      selected = today;
+    } else {
+      formattedSelected =
+        typeof format === 'function'
+          ? format(selected)
+          : formatDate(selected, format);
+    }
   }
 
   onMount(() => {
@@ -211,9 +217,10 @@
 
   function clear() {
     close();
-    formattedSelected = null;
     dateChosen = false;
-    selected = today;
+    selected = null;
+    assignValueToTrigger(formattedSelected);
+    return dispatch('dateSelected', { date: null });
   }
 
   function registerSelection(chosen) {
@@ -351,6 +358,7 @@
   #today-button {
     cursor: pointer;
     padding: 10px 10px;
+    margin-left: 10px;
     margin-right: 10px;
   }
 
@@ -358,6 +366,7 @@
     cursor: pointer;
     padding: 10px 10px;
     margin-left: 10px;
+    margin-right: 10px;
   }
 
   .datepicker {
